@@ -2,7 +2,7 @@
 import argparse
 import logging
 import os
-import multiprocessing
+import multiprocessing as mp
 import moviepy.editor as editor
 from pathlib import Path
 
@@ -84,30 +84,30 @@ def convert(from_: Path or str,
     to_ = Path(to_)
 
     if not from_.exists():
-        raise FileNotFoundError(f"{from_} doesn't exist")
+        raise FileNotFoundError(f"'{from_}' doesn't exist")
     if to_.exists():
         if not force:
-            raise FileEvenExistsError(f"{to_} even exists")
+            raise FileEvenExistsError(f"'{to_}' even exists")
     if not (is_video(from_) and is_video(to_)):
-        raise WrongExtentionError(f"{from_} or {to_} have a wrong extension")
+        raise WrongExtentionError(f"'{from_}' or '{to_}' have a wrong extension")
 
-    logger.debug(f"Converting {from_} to {to_}")
+    logger.debug(f"Converting '{from_}' to '{to_}'")
     try:
         video = editor.VideoFileClip(str(from_))
     except Exception as e:
-        logger.error(f"{e}\n while openning {from_} file")
+        logger.error(f"{e}\n while opening '{from_}' file")
         raise
 
     try:
         video.write_videofile(str(to_), **kwargs)
     except Exception as e:
-        logger.error(f"{e}\n while converting {from_} {to_}")
+        logger.error(f"{e}\n while converting '{from_}' to '{to_}'")
         raise
 
-    logger.debug(f"Converting {from_} to {to_} was completed")
+    logger.debug(f"Converting '{from_}' to '{to_}' was completed")
 
 
-def convert_suffix_to_mp4(path: Path or str) -> Path:
+def change_suffix_to_mp4(path: Path or str) -> Path:
     """
     Change a filename extension to mp4.
 
@@ -127,22 +127,35 @@ def convert_file_to_mp4(from_: Path or str,
     :return: None.
     """
     if Path(from_).suffix == '.mp4':
-        logger.error(f"{from_} is even a mp4 filr, nothing to convert")
+        os.rename(from_, to_)
+        logger.error(f"{from_} is even a mp4 file, move to to destination")
         return
 
-    to_ = to_ or convert_suffix_to_mp4(from_)
+    to_ = to_ or change_suffix_to_mp4(from_)
     try:
         convert(from_, to_)
     except Exception as e:
         logger.error(f"{e}\nconverting {from_} to {to_}")
 
 
-def convert_all(path: Path or str) -> None:
-    convert_file_to_mp4(path)
+def files(start_path: Path or str,
+          dest_path: Path) -> tuple:
+    for from_ in os.listdir(start_path):
+        if is_video(from_):
+            to_ = change_suffix_to_mp4(from_)
+            yield from_, dest_path / to_
+
+
+def convert_all(base_path: Path or str = '.',
+                dest_path: Path = Path('result/'),
+                processes_count: int = None) -> None:
+    processes_count = processes_count or mp.cpu_count() * 2
+    with mp.Pool(processes_count) as pool:
+        pool.starmap(convert_file_to_mp4, files(base_path, dest_path))
 
 
 def main() -> None:
-    convert_all('sample_1280x720.flv')
+    convert_all()
 
 
 if __name__ == "__main__":
