@@ -124,12 +124,12 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
-.mp4
-.m4v
-.mkv
-.flv
-.webm
-.avi
-.wmv
-.mpg
-.mov
+*.mp4
+*.m4v
+*.mkv
+*.flv
+*.webm
+*.avi
+*.wmv
+*.mpg
+*.mov
