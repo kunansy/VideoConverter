@@ -3,6 +3,7 @@ import argparse
 import logging
 import multiprocessing as mp
 import os
+import time
 from pathlib import Path
 from typing import Tuple, Iterator
 
@@ -56,7 +57,7 @@ file_handler = logging.FileHandler(
     delay=True,
     encoding='utf-8'
 )
-file_handler.setLevel(logging.DEBUG)
+file_handler.setLevel(logging.CRITICAL)
 file_handler.setFormatter(formatter)
 
 # creating logger
