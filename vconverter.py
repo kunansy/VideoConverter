@@ -234,9 +234,22 @@ def validate(start_path: Path) -> None:
 
 
 def main() -> None:
-    convert_all()
+    parser = argparse.ArgumentParser(
+        description="Convert video to .mp4"
+    )
+    parser.add_argument(
+        '-v', '--validate',
+        type=str,
+        metavar="See which fies might be converted and which might not",
+        default=Path('.'),
+        dest='validate',
+        required=False
+    )
+    args = parser.parse_args()
+
+    if start_path := args.validate:
+        validate(Path(start_path))
 
 
 if __name__ == "__main__":
     main()
-
