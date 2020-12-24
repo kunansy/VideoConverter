@@ -18,6 +18,8 @@ DEST_FOLDER = Path('result/')
 # videos have been converted (original files)
 CONVERTED_VIDEOS_FOLDER = Path('processed/')
 
+MAX_FILENAME_LENGTH = 16
+
 
 class FileEvenExistsError(Exception):
     pass
@@ -152,10 +154,11 @@ def convert_file_to_mp4(from_: Path,
         logger.error(f"{e}\nconverting {from_} to {to_}")
 
 
-def files(start_path: Path or str,
-          dest_path: Path) -> tuple:
-    for from_ in os.listdir(start_path):
-        if is_video(from_):
+
+def files(start_path: Path,
+          dest_path: Path) -> Iterator[Tuple[Path, Path]]:
+    for from_, is_ok in validate_videos(start_path):
+        if is_ok:
             to_ = change_suffix_to_mp4(from_)
             yield from_, dest_path / to_
 
