@@ -67,6 +67,26 @@ logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
 
+def set_handler_level(level: int or str,
+                      handler_class: type) -> None:
+    try:
+        level = level.upper()
+    except AttributeError:
+        pass
+
+    for handler_index in range(len(logger.handlers)):
+        if logger.handlers[handler_index].__class__ == handler_class:
+            logger.handlers[handler_index].setLevel(level)
+
+
+def set_stream_handler_level(level: int or str) -> None:
+    set_handler_level(level, logging.StreamHandler)
+
+
+def set_file_handler_level(level: int or str) -> None:
+    set_handler_level(level, logging.FileHandler)
+
+
 def is_video(path: Path) -> bool:
     """
     :param path: Path to file.
