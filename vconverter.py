@@ -23,7 +23,7 @@ class FileEvenExistsError(Exception):
     pass
 
 
-class WrongExtentionError(Exception):
+class WrongExtensionError(Exception):
     pass
 
 
@@ -73,8 +73,8 @@ def is_video(path: Path) -> bool:
     return path.suffix in VIDEO
 
 
-def convert(from_: Path or str,
-            to_: Path or str,
+def convert(from_: Path,
+            to_: Path,
             force: bool = False,
             **kwargs) -> None:
     """
@@ -93,16 +93,13 @@ def convert(from_: Path or str,
     :exception WrongExtensionError: if a path has an
      unsupported extension.
     """
-    from_ = Path(from_)
-    to_ = Path(to_)
-
     if not from_.exists():
         raise FileNotFoundError(f"'{from_}' doesn't exist")
     if to_.exists():
         if not force:
             raise FileEvenExistsError(f"'{to_}' even exists")
     if not (is_video(from_) and is_video(to_)):
-        raise WrongExtentionError(f"'{from_}' or '{to_}' have a wrong extension")
+        raise WrongExtensionError(f"'{from_}' or '{to_}' have wrong extension")
 
     logger.debug(f"Converting '{from_}' to '{to_}'")
     try:
@@ -117,7 +114,7 @@ def convert(from_: Path or str,
         logger.error(f"{e}\n while converting '{from_}' to '{to_}'")
         raise
 
-    logger.debug(f"Converting '{from_}' to '{to_}' was completed")
+    logger.debug(f"Converting '{from_}' to '{to_}' completed")
 
 
 def change_suffix_to_mp4(path: Path or str) -> Path:
