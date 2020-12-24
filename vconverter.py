@@ -259,16 +259,57 @@ def main() -> None:
     )
     parser.add_argument(
         '-v', '--validate',
-        type=str,
-        metavar="See which fies might be converted and which might not",
-        default=Path('.'),
+        action="store_true",
+        default=True,
         dest='validate',
+        required=False
+    )
+    parser.add_argument(
+        '-c', '--convert',
+        action="store_true",
+        default=False,
+        dest='convert',
+        required=False
+    )
+    parser.add_argument(
+        '-p', '--start-path',
+        metavar="Path to dir where there are videos to convert",
+        type=str,
+        default=Path('.'),
+        dest='start_path',
+        required=False
+    )
+    parser.add_argument(
+        '-d', '--destination-path',
+        metavar="Path to where store processed videos",
+        type=str,
+        default=DEST_FOLDER,
+        dest='dest_path',
+        required=False
+    )
+    parser.add_argument(
+        '-l', '--log-level',
+        metavar="Level of stream handler",
+        type=str,
+        default='INFO',
+        dest="level",
         required=False
     )
     args = parser.parse_args()
 
-    if start_path := args.validate:
+    if level := args.level:
+        set_stream_handler_level(level)
+
+    start_path = Path(args.start_path)
+    dest_path = Path(args.dest_path)
+
+    if args.validate:
         validate(Path(start_path))
+    if args.convert:
+        logger.info("Converting started...")
+        start = time.time()
+        convert_all(start_path, dest_path)
+        logger.info(f"Converting completed by {time.time() - start:.2f}s")
 
 
 if __name__ == "__main__":
