@@ -12,6 +12,10 @@ VIDEO = (
     '.webm', '.avi', '.wmv', '.mpg', '.mov'
 )
 
+DEST_FOLDER = Path('result/')
+# videos have been converted (original files)
+CONVERTED_VIDEOS_FOLDER = Path('processed/')
+
 
 class FileEvenExistsError(Exception):
     pass
@@ -157,8 +161,8 @@ def files(start_path: Path or str,
             yield from_, dest_path / to_
 
 
-def convert_all(base_path: Path or str = '.',
-                dest_path: Path = Path('result/'),
+def convert_all(base_path: Path,
+                dest_path: Path,
                 processes_count: int = None) -> None:
     processes_count = processes_count or mp.cpu_count() * 2
     with mp.Pool(processes_count) as pool:
