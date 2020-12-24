@@ -168,6 +168,58 @@ def convert_all(base_path: Path,
         pool.starmap(convert_file_to_mp4, files(base_path, dest_path))
 
 
+def validate_videos(start_path: Path) -> Iterator[Tuple[Path, bool]]:
+    """
+    Get path to file and status whether
+     the file is valid to convert.
+
+    Skip all files (dirs) with no extension.
+
+    :param start_path: start Path.
+    :return: tuple of Path and bool.
+    """
+    for item in os.listdir(start_path):
+        item = Path(item)
+        if item.suffix:
+            yield item, is_video(item)
+
+
+def validate(start_path: Path) -> None:
+    """
+    Print which files are valid to convert but which not.
+
+    :param start_path: start Path.
+    :return: None.
+    """
+    valid = invalid = 0
+    for path, is_valid in validate_videos(start_path):
+        shorted_name = Path(path).name
+        if len(shorted_name) > MAX_FILENAME_LENGTH:
+            shorted_name = ''.join(
+                shorted_name[:MAX_FILENAME_LENGTH // 2] +
+                '...' +
+                shorted_name[-MAX_FILENAME_LENGTH // 2:])
+
+        print(colorama.Fore.GREEN if is_valid else colorama.Fore.RED,
+              "Processing",
+              end='', sep='')
+
+        if is_valid:
+            valid += 1
+            print(f"{shorted_name} is valid".rjust(40, '.'))
+        else:
+            invalid += 1
+            print(f"{shorted_name} is invalid".rjust(40, '.'))
+
+    print(colorama.Fore.GREEN, "=" * 50, colorama.Fore.RESET, sep='')
+    print(f"Total files count: {len(os.listdir(start_path))}")
+    if invalid == 0:
+        print(f"All {valid} videos are valid")
+    else:
+        print(f"Total valid videos: {valid}")
+        print(f"Total invalid videos: {invalid}")
+
+
 def main() -> None:
     convert_all()
 
