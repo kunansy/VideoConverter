@@ -144,7 +144,12 @@ def convert_file_to_mp4(from_: Path,
     """
     if Path(from_).suffix == '.mp4':
         os.rename(from_, to_)
-        logger.error(f"{from_} is even a mp4 file, move to to destination")
+        logger.info(f"{from_} is even a mp4 file, move it to destination")
+        return
+
+    if to_ is not None and to_.suffix != '.mp4':
+        logger.error(f"Destination file must have .mp4 extension, "
+                     f"but '{to_.suffix}' found in '{to_}'")
         return
 
     to_ = to_ or change_suffix_to_mp4(from_)
@@ -153,6 +158,8 @@ def convert_file_to_mp4(from_: Path,
     except Exception as e:
         logger.error(f"{e}\nconverting {from_} to {to_}")
 
+    # move processed video
+    os.rename(from_, CONVERTED_VIDEOS_FOLDER / from_)
 
 
 def files(start_path: Path,
