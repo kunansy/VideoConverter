@@ -59,8 +59,12 @@ logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
 
-def is_video(path: Path or str) -> bool:
-    return Path(path).suffix in VIDEO
+def is_video(path: Path) -> bool:
+    """
+    :param path: Path to file.
+    :return: bool, whether the file conversion is supported.
+    """
+    return path.suffix in VIDEO
 
 
 def convert(from_: Path or str,
@@ -68,17 +72,20 @@ def convert(from_: Path or str,
             force: bool = False,
             **kwargs) -> None:
     """
-    Convert a video file to another video format.
+    Convert a video to another video format.
 
-    :param from_: Path or str, path to video file to convert.
-    :param to_: Path or str, path to result file.
+    :param from_: Path to video to convert.
+    :param to_: Path to result file.
     :param force: bool, rewrite existing to_ file if True.
+     False by default.
     :param kwargs: key words to writing a new video file.
     :return: None.
-    :exception FileNotFoundError: if the file doesn't exist.
+
+    :exception FileNotFoundError: if the source file doesn't exist.
     :exception FileEvenExistsError: if the result file even
      exists and force = False.
-    :exception WrongExtentionError: if path has a wrong suffix.
+    :exception WrongExtensionError: if a path has an
+     unsupported extension.
     """
     from_ = Path(from_)
     to_ = Path(to_)
@@ -109,21 +116,25 @@ def convert(from_: Path or str,
 
 def change_suffix_to_mp4(path: Path or str) -> Path:
     """
-    Change a filename extension to mp4.
-
-    :param path: Path or str, path to change its extension.
-    :return: Path with changed to .mp4 extension.
+    :param path: Path or str, file to change its extension.
+    :return: Path format *.mp4.
     """
     return Path(path).with_suffix('.mp4')
 
 
-def convert_file_to_mp4(from_: Path or str,
-                        to_: Path or str = None) -> None:
+def convert_file_to_mp4(from_: Path,
+                        to_: Path = None) -> None:
     """
-    Convert a video file to file with mp4 format.
+    Convert a video file to *.mp4.
 
-    :param from_: Path or str, path to the video file to convert.
-    :param to_: Path or str, path to the result video file.
+    Just move source file to destination folder
+     if it is even *.mp4.
+
+    Move source file to CONVERTED_VIDEOS_FOLDER
+     if converted successfully.
+
+    :param from_: Path to the video file to convert.
+    :param to_: Path to the result file.
     :return: None.
     """
     if Path(from_).suffix == '.mp4':
