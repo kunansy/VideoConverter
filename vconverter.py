@@ -1,11 +1,13 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.8
 import argparse
 import logging
-import os
 import multiprocessing as mp
-import moviepy.editor as editor
+import os
 from pathlib import Path
+from typing import Tuple, Iterator
 
+import colorama
+import moviepy.editor as editor
 
 VIDEO = (
     '.mp4', '.m4v', '.mkv', '.flv',
