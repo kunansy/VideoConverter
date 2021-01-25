@@ -218,6 +218,25 @@ def validate_videos(start_path: Path) -> Iterator[Tuple[Path, bool]]:
             yield item, is_video(item)
 
 
+def short_filename(path: Path,
+                   length: int = MAX_FILENAME_LENGTH) -> str:
+    """
+    Short the filename.
+
+    :param path: Path to the file.
+    :param length: int, expected name length.
+
+    :return: str, shorted file name.
+    """
+    shorted_name = Path(path).name
+    if len(shorted_name) > length:
+        shorted_name = ''.join(
+            shorted_name[:length // 2] +
+            '...' +
+            shorted_name[-length // 2:])
+    return shorted_name
+
+
 def validate(start_path: Path) -> None:
     """
     Print which files are valid to convert but which not.
@@ -227,13 +246,7 @@ def validate(start_path: Path) -> None:
     """
     valid = invalid = 0
     for path, is_valid in validate_videos(start_path):
-        shorted_name = Path(path).name
-        if len(shorted_name) > MAX_FILENAME_LENGTH:
-            shorted_name = ''.join(
-                shorted_name[:MAX_FILENAME_LENGTH // 2] +
-                '...' +
-                shorted_name[-MAX_FILENAME_LENGTH // 2:])
-
+        shorted_name = short_filename(path)
         print(colorama.Fore.GREEN if is_valid else colorama.Fore.RED,
               "Processing",
               end='', sep='')
