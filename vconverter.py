@@ -126,22 +126,29 @@ def convert_file_to_mp4(from_: Path,
 
 
 def files(start_path: Path,
-          dest_path: Path) -> Iterator[Tuple[Path, Path]]:
+          dest_path: Path,
+          count: int) -> Iterator[Tuple[Path, Path]]:
+    processed = 0
     for from_, is_ok in validate_videos(start_path):
+        if count != -1 and processed >= count:
+            return
+
         if is_ok:
+            processed += 1
             to_ = change_suffix_to_mp4(from_)
             yield from_, dest_path / to_
 
 
 def convert_all(base_path: Path,
                 dest_path: Path,
+                count: int,
                 processes_count: int = None) -> None:
     os.makedirs(DEST_FOLDER, exist_ok=True)
     os.makedirs(CONVERTED_VIDEOS_FOLDER, exist_ok=True)
 
     processes_count = processes_count or mp.cpu_count() * 2
     with mp.Pool(processes_count) as pool:
-        pool.starmap(convert_file_to_mp4, files(base_path, dest_path))
+        pool.starmap(convert_file_to_mp4, files(base_path, dest_path, count))
 
 
 def validate_videos(start_path: Path) -> Iterator[Tuple[Path, bool]]:
@@ -221,9 +228,11 @@ def main() -> None:
     )
     parser.add_argument(
         '-c', '--convert',
-        action="store_true",
-        default=False,
-        dest='convert',
+        type=int,
+        help="Set count of videos to convert. If -1 "
+             "all files will be converted. 0 by default",
+        default=0,
+        dest="count",
         required=False
     )
     parser.add_argument(
@@ -257,10 +266,10 @@ def main() -> None:
 
     if args.validate:
         validate(Path(start_path))
-    if args.convert:
+    if count := args.count:
         logger.info("Converting started...")
         start = time.time()
-        convert_all(start_path, dest_path)
+        convert_all(start_path, dest_path, count)
         logger.info(f"Converting completed by {time.time() - start:.2f}s")
 
 
