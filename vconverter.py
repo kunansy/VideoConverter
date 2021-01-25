@@ -84,9 +84,12 @@ def convert(from_: Path,
             raise exceptions.FileEvenExistsError(f"'{to_}' even exists")
     if not (is_video(from_) and is_video(to_)):
         raise exceptions.WrongExtensionError(
-            f"'{from_}' or '{to_}' have wrong extension")
+            f"'{from_.suffix}' or '{to_.suffix}' is wrong extension")
 
-    logger.debug(f"Converting '{from_}' to '{to_}'")
+    short_from = short_filename(from_)
+    short_to = short_filename(to_)
+
+    logger.debug(f"Converting '{short_from}' to '{short_to}'")
     try:
         video = editor.VideoFileClip(str(from_))
     except Exception as e:
@@ -99,7 +102,7 @@ def convert(from_: Path,
         logger.error(f"{e}\n while converting '{from_}' to '{to_}'")
         raise
 
-    logger.debug(f"Converting '{from_}' to '{to_}' completed")
+    logger.debug(f"Converting '{short_from}' to '{short_to}' completed")
 
 
 def change_suffix_to_mp4(path: Path or str) -> Path:
