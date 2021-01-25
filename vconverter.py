@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.8
 import argparse
+import datetime
 import logging
 import multiprocessing as mp
 import os
@@ -272,8 +273,18 @@ def main() -> None:
     if count := args.count:
         logger.info("Converting started...")
         start = time.time()
+
         convert_all(args.start_path, args.dest_path, count)
-        logger.info(f"Converting completed by {time.time() - start:.2f}s")
+
+        ex_time = round(time.time() - start, 2)
+        ex_time = f"{datetime.timedelta(seconds=ex_time)}".split('.')[0]
+
+        hh, mm, ss = ex_time.split(':')
+        hh = f"{int(hh)}h " if int(hh) else ''
+        mm = f"{int(mm)}m " if int(mm) else ''
+
+        logger.info(
+            f"Converting {args.count} videos completed by {hh}{mm}{ss}s")
 
 
 if __name__ == "__main__":
