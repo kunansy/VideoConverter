@@ -220,8 +220,9 @@ def main() -> None:
     )
     parser.add_argument(
         '-v', '--validate',
+        help="See which videos might be converted",
         action="store_true",
-        default=True,
+        default=False,
         dest='validate',
         required=False
     )
@@ -236,25 +237,28 @@ def main() -> None:
     )
     parser.add_argument(
         '-p', '--start-path',
-        metavar="Path to dir where there are videos to convert",
-        type=str,
+        help="Path to dir where there are videos to convert."
+             "Current dir by default.",
+        type=Path,
         default=Path('.'),
         dest='start_path',
         required=False
     )
     parser.add_argument(
         '-d', '--destination-path',
-        metavar="Path to where store processed videos",
-        type=str,
+        help="Path to where store processed videos."
+             "result/ by default.",
+        type=Path,
         default=DEST_FOLDER,
         dest='dest_path',
         required=False
     )
     parser.add_argument(
         '-l', '--log-level',
-        metavar="Level of stream handler",
+        help="Level of the stream handler",
         type=str,
-        default='INFO',
+        choices=("debug", "info", "warning", "error", "critical"),
+        default="debug",
         dest="level",
         required=False
     )
