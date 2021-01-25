@@ -268,11 +268,11 @@ def main() -> None:
         logger.set_stream_handler_level(level)
 
     if args.validate:
-        validate(Path(start_path))
+        validate(Path(args.start_path))
     if count := args.count:
         logger.info("Converting started...")
         start = time.time()
-        convert_all(start_path, dest_path, count)
+        convert_all(args.start_path, args.dest_path, count)
         logger.info(f"Converting completed by {time.time() - start:.2f}s")
 
 
