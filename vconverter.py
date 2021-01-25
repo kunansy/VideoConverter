@@ -45,9 +45,7 @@ log_path = LOG_FOLDER / 'converter.log'
 
 
 formatter = logging.Formatter(
-    fmt=MSG_FMT,
-    datefmt=DATE_FMT,
-    style='{'
+    fmt=MSG_FMT, datefmt=DATE_FMT, style='{'
 )
 
 # creating stream handler
@@ -57,9 +55,7 @@ stream_handler.setFormatter(formatter)
 
 # creating file handler
 file_handler = logging.FileHandler(
-    log_path,
-    delay=True,
-    encoding='utf-8'
+    log_path, delay=True, encoding='utf-8'
 )
 file_handler.setLevel(logging.CRITICAL)
 file_handler.setFormatter(formatter)
@@ -257,8 +253,7 @@ def validate(start_path: Path) -> None:
     for path, is_valid in validate_videos(start_path):
         shorted_name = short_filename(path)
         print(colorama.Fore.GREEN if is_valid else colorama.Fore.RED,
-              "Processing",
-              end='', sep='')
+              "Processing", end='', sep='')
 
         if is_valid:
             valid += 1
