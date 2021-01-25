@@ -141,12 +141,11 @@ def files(start_path: Path,
 
 def convert_all(base_path: Path,
                 dest_path: Path,
-                count: int,
-                processes_count: int = None) -> None:
+                count: int) -> None:
     os.makedirs(DEST_FOLDER, exist_ok=True)
     os.makedirs(CONVERTED_VIDEOS_FOLDER, exist_ok=True)
 
-    processes_count = processes_count or mp.cpu_count() * 2
+    processes_count = mp.cpu_count() - 1 or 1
     with mp.Pool(processes_count) as pool:
         pool.starmap(convert_file_to_mp4, files(base_path, dest_path, count))
 
