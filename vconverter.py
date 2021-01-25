@@ -30,8 +30,8 @@ class WrongExtensionError(Exception):
     pass
 
 
-MSG_FMT = "[{name}:{process}:{module}:{levelname}:" \
-          "{funcName}:{asctime}] {message}"
+MSG_FMT = "[{asctime},{msecs:3.0f}] [{levelname}] " \
+          "[{process}:{module}:{funcName}] {message}"
 DATE_FMT = "%d.%m.%Y %H:%M:%S"
 
 LOG_FOLDER = Path('logs')
