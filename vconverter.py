@@ -22,17 +22,6 @@ CONVERTED_VIDEOS_FOLDER = Path('processed/')
 MAX_FILENAME_LENGTH = 16
 
 
-class FileEvenExistsError(Exception):
-    pass
-
-
-class WrongExtensionError(Exception):
-    pass
-
-
-class HandlerNotFoundError(Exception):
-    pass
-
 
 MSG_FMT = "[{asctime},{msecs:3.0f}] [{levelname}] " \
           "[{process}:{module}:{funcName}] {message}"
