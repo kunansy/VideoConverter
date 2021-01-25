@@ -10,6 +10,8 @@ from typing import Tuple, Iterator
 import colorama
 import moviepy.editor as editor
 
+import logger
+
 VIDEO = (
     '.mp4', '.m4v', '.mkv', '.flv',
     '.webm', '.avi', '.wmv', '.mpg', '.mov'
@@ -21,65 +23,9 @@ CONVERTED_VIDEOS_FOLDER = Path('processed/')
 
 MAX_FILENAME_LENGTH = 16
 
-
-
-MSG_FMT = "[{asctime},{msecs:3.0f}] [{levelname}] " \
-          "[{process}:{module}:{funcName}] {message}"
-DATE_FMT = "%d.%m.%Y %H:%M:%S"
-
-LOG_FOLDER = Path('logs')
-os.makedirs(LOG_FOLDER, exist_ok=True)
-
-log_path = LOG_FOLDER / 'converter.log'
-
-
-formatter = logging.Formatter(
-    fmt=MSG_FMT, datefmt=DATE_FMT, style='{'
-)
-
-# creating stream handler
-stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.DEBUG)
-stream_handler.setFormatter(formatter)
-
-# creating file handler
-file_handler = logging.FileHandler(
-    log_path, delay=True, encoding='utf-8'
-)
-file_handler.setLevel(logging.CRITICAL)
-file_handler.setFormatter(formatter)
-
-# creating logger
-logger = logging.getLogger('converter')
-logger.setLevel(logging.DEBUG)
-
-logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
-
-
-def set_handler_level(logger_: logging.Logger,
-                      handler_class: type):
-    def wrapped(level: int or str):
-        try:
-            level = level.upper()
-        except AttributeError:
-            pass
-
-        is_there_the_handler = False
-        for handler_index in range(len(logger_.handlers)):
-            if logger_.handlers[handler_index].__class__ == handler_class:
-                logger_.handlers[handler_index].setLevel(level)
-                is_there_the_handler = True
-
-        if not is_there_the_handler:
-            raise HandlerNotFoundError(
-                f"Handler {handler_class.__class__.__name__} not found")
-
-    return wrapped
-
-
-set_stream_handler_level = set_handler_level(logger, logging.StreamHandler)
-set_file_handler_level = set_handler_level(logger, logging.FileHandler)
+logger = logger.Logger(__name__, logging.DEBUG)
+logger.add_stream_handler(logging.DEBUG)
+logger.add_file_handler(logging.DEBUG)
 
 
 def is_video(path: Path) -> bool:
@@ -305,10 +251,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if level := args.level:
-        set_stream_handler_level(level)
-
-    start_path = Path(args.start_path)
-    dest_path = Path(args.dest_path)
+        logger.set_stream_handler_level(level)
 
     if args.validate:
         validate(Path(start_path))
