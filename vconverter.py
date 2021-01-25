@@ -30,6 +30,10 @@ class WrongExtensionError(Exception):
     pass
 
 
+class HandlerNotFoundError(Exception):
+    pass
+
+
 MSG_FMT = "[{asctime},{msecs:3.0f}] [{levelname}] " \
           "[{process}:{module}:{funcName}] {message}"
 DATE_FMT = "%d.%m.%Y %H:%M:%S"
@@ -68,24 +72,29 @@ logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
 
-def set_handler_level(level: int or str,
-                      handler_class: type) -> None:
-    try:
-        level = level.upper()
-    except AttributeError:
-        pass
+def set_handler_level(logger_: logging.Logger,
+                      handler_class: type):
+    def wrapped(level: int or str):
+        try:
+            level = level.upper()
+        except AttributeError:
+            pass
 
-    for handler_index in range(len(logger.handlers)):
-        if logger.handlers[handler_index].__class__ == handler_class:
-            logger.handlers[handler_index].setLevel(level)
+        is_there_the_handler = False
+        for handler_index in range(len(logger_.handlers)):
+            if logger_.handlers[handler_index].__class__ == handler_class:
+                logger_.handlers[handler_index].setLevel(level)
+                is_there_the_handler = True
+
+        if not is_there_the_handler:
+            raise HandlerNotFoundError(
+                f"Handler {handler_class.__class__.__name__} not found")
+
+    return wrapped
 
 
-def set_stream_handler_level(level: int or str) -> None:
-    set_handler_level(level, logging.StreamHandler)
-
-
-def set_file_handler_level(level: int or str) -> None:
-    set_handler_level(level, logging.FileHandler)
+set_stream_handler_level = set_handler_level(logger, logging.StreamHandler)
+set_file_handler_level = set_handler_level(logger, logging.FileHandler)
 
 
 def is_video(path: Path) -> bool:
