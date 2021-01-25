@@ -38,6 +38,25 @@ def is_video(path: Path) -> bool:
     return path.suffix in VIDEO
 
 
+def short_filename(path: Path,
+                   length: int = MAX_FILENAME_LENGTH) -> str:
+    """
+    Short the filename.
+
+    :param path: Path to the file.
+    :param length: int, expected name length.
+
+    :return: str, shorted file name.
+    """
+    shorted_name = Path(path).name
+    if len(shorted_name) > length:
+        shorted_name = ''.join(
+            shorted_name[:length // 2] +
+            '...' +
+            shorted_name[-length // 2:])
+    return shorted_name
+
+
 def convert(from_: Path,
             to_: Path,
             force: bool = False,
@@ -165,25 +184,6 @@ def validate_videos(start_path: Path) -> Iterator[Tuple[Path, bool]]:
         item = Path(item)
         if item.suffix:
             yield item, is_video(item)
-
-
-def short_filename(path: Path,
-                   length: int = MAX_FILENAME_LENGTH) -> str:
-    """
-    Short the filename.
-
-    :param path: Path to the file.
-    :param length: int, expected name length.
-
-    :return: str, shorted file name.
-    """
-    shorted_name = Path(path).name
-    if len(shorted_name) > length:
-        shorted_name = ''.join(
-            shorted_name[:length // 2] +
-            '...' +
-            shorted_name[-length // 2:])
-    return shorted_name
 
 
 def validate(start_path: Path) -> None:
