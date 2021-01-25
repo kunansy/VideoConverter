@@ -10,6 +10,7 @@ from typing import Tuple, Iterator
 import colorama
 import moviepy.editor as editor
 
+import exceptions
 import logger
 
 VIDEO = (
@@ -60,9 +61,10 @@ def convert(from_: Path,
         raise FileNotFoundError(f"'{from_}' doesn't exist")
     if to_.exists():
         if not force:
-            raise FileEvenExistsError(f"'{to_}' even exists")
+            raise exceptions.FileEvenExistsError(f"'{to_}' even exists")
     if not (is_video(from_) and is_video(to_)):
-        raise WrongExtensionError(f"'{from_}' or '{to_}' have wrong extension")
+        raise exceptions.WrongExtensionError(
+            f"'{from_}' or '{to_}' have wrong extension")
 
     logger.debug(f"Converting '{from_}' to '{to_}'")
     try:
