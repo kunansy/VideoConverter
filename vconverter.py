@@ -225,7 +225,8 @@ def validate(start_path: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Convert video to .mp4"
+        description=f"Convert a video file to .mp4."
+                    f"It can convert files these formats: {VIDEO}"
     )
     parser.add_argument(
         '-v', '--validate',
