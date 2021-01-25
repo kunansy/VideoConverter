@@ -211,6 +211,11 @@ def validate(start_path: Path) -> None:
 
     print(colorama.Fore.GREEN, "=" * 50, colorama.Fore.RESET, sep='')
     print(f"Total files count: {len(os.listdir(start_path))}")
+    if valid == invalid == 0:
+        print(f"No video found")
+        return
+
+    print(f"Total videos count: {valid + invalid}\n")
     if invalid == 0:
         print(f"All {valid} videos are valid")
     else:
