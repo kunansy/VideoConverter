@@ -158,35 +158,6 @@ def convert_file_to_mp4(from_: Path,
     os.rename(from_, CONVERTED_VIDEOS_FOLDER / from_)
 
 
-def files(start_path: Path,
-          dest_path: Path,
-          count: int,
-          max_size: int) -> Iterator[Tuple[Path, Path]]:
-    processed = 0
-    for from_, is_ok in validate_videos(start_path, max_size):
-        if count != -1 and processed >= count:
-            return
-
-        if is_ok:
-            processed += 1
-            to_ = change_suffix_to_mp4(from_)
-            yield from_, dest_path / to_
-
-
-def convert_all(base_path: Path,
-                dest_path: Path,
-                count: int,
-                max_size: int) -> None:
-    os.makedirs(DEST_FOLDER, exist_ok=True)
-    os.makedirs(CONVERTED_VIDEOS_FOLDER, exist_ok=True)
-
-    processes_count = mp.cpu_count() - 1 or 1
-    with mp.Pool(processes_count) as pool:
-        pool.starmap(
-            convert_file_to_mp4, files(base_path, dest_path, count, max_size)
-        )
-
-
 def is_item_valid(path: Path,
                   max_size: int) -> bool:
     return is_video(path) and get_size(path) <= max_size
@@ -209,6 +180,21 @@ def validate_videos(start_path: Path,
         item = Path(item)
         if item.suffix:
             yield item, is_item_valid(item, max_size)
+
+
+def files(start_path: Path,
+          dest_path: Path,
+          count: int,
+          max_size: int) -> Iterator[Tuple[Path, Path]]:
+    processed = 0
+    for from_, is_ok in validate_videos(start_path, max_size):
+        if count != -1 and processed >= count:
+            return
+
+        if is_ok:
+            processed += 1
+            to_ = change_suffix_to_mp4(from_)
+            yield from_, dest_path / to_
 
 
 def validate(start_path: Path,
@@ -246,6 +232,20 @@ def validate(start_path: Path,
     else:
         print(f"Total valid videos: {valid}")
         print(f"Total invalid videos: {invalid}")
+
+
+def convert_all(base_path: Path,
+                dest_path: Path,
+                count: int,
+                max_size: int) -> None:
+    os.makedirs(DEST_FOLDER, exist_ok=True)
+    os.makedirs(CONVERTED_VIDEOS_FOLDER, exist_ok=True)
+
+    processes_count = mp.cpu_count() - 1 or 1
+    with mp.Pool(processes_count) as pool:
+        pool.starmap(
+            convert_file_to_mp4, files(base_path, dest_path, count, max_size)
+        )
 
 
 def main() -> None:
