@@ -14,13 +14,16 @@ import moviepy.editor as editor
 import exceptions
 import logger
 
+# these video extensions can be
+# converted to mp4 by the program
 VIDEO = (
     '.mp4', '.m4v', '.mkv', '.flv',
     '.webm', '.avi', '.wmv', '.mpg', '.mov'
 )
 
 DEST_FOLDER = Path('result/')
-# videos have been converted (original files)
+# store here videos have been
+# converted (original files)
 CONVERTED_VIDEOS_FOLDER = Path('processed/')
 
 MAX_FILENAME_LENGTH = 16
@@ -33,7 +36,7 @@ logger.add_file_handler(logging.DEBUG)
 def is_video(path: Path) -> bool:
     """
     :param path: Path to file.
-    :return: bool, whether the file conversion is supported.
+    :return: bool, check whether the file conversion is supported.
     """
     return path.suffix in VIDEO
 
@@ -41,7 +44,8 @@ def is_video(path: Path) -> bool:
 def short_filename(path: Path,
                    length: int = MAX_FILENAME_LENGTH) -> str:
     """
-    Short the filename.
+    Short the filename, remove its parent dirs,
+    and add ... inside the name.
 
     :param path: Path to the file.
     :param length: int, expected name length.
@@ -58,7 +62,15 @@ def short_filename(path: Path,
 
 
 def get_size(path: Path,
-             decimal_places: int = 1) -> int:
+             decimal_places: int = 1) -> float:
+    """
+    Get file size in MB, rounded to decimal_places.
+
+    :param path: Path to the file.
+    :param decimal_places: int, count of sighs after dor in result value.
+
+    :return: float, rounded size of the file in MB.
+    """
     if not path.exists():
         return -1
 
@@ -129,13 +141,14 @@ def convert_file_to_mp4(from_: Path,
     Convert a video file to *.mp4.
 
     Just move source file to destination folder
-     if it is even *.mp4.
+    if it is even *.mp4.
 
     Move source file to CONVERTED_VIDEOS_FOLDER
-     if converted successfully.
+    if converted successfully.
 
     :param from_: Path to the video file to convert.
     :param to_: Path to the result file.
+
     :return: None.
     """
     if Path(from_).suffix == '.mp4':
@@ -160,6 +173,14 @@ def convert_file_to_mp4(from_: Path,
 
 def is_item_valid(path: Path,
                   max_size: int) -> bool:
+    """
+    Check whether the item is a valid video file to convert.
+
+    :param path: Path to the file.
+    :param max_size: int, max size of the file.
+
+    :return: bool, whether the item is valid.
+    """
     return is_video(path) and get_size(path) <= max_size
 
 
@@ -167,13 +188,15 @@ def validate_videos(start_path: Path,
                     max_size: int) -> Iterator[Tuple[Path, bool]]:
     """
     Get path to file and status whether
-     the file is valid to convert.
+    the file is valid to convert.
 
     Skip all files (dirs) with no extension.
 
-    :param start_path: start Path.
+    :param base_path: Path to the folder from
+    where get files to convert.
     :param max_size: int, max size of the file in MB.
-     If length of the file is > max_size, regard it's invalid.
+    If length of the file is > max_size, regard it's invalid.
+
     :return: tuple of Path and bool.
     """
     for item in os.listdir(start_path):
@@ -186,6 +209,19 @@ def files(start_path: Path,
           dest_path: Path,
           count: int,
           max_size: int) -> Iterator[Tuple[Path, Path]]:
+    """
+    Yield path of valid source file to convert and
+    destination path.
+
+    :param base_path: Path to the folder from
+    where get files to convert.
+    :param dest_path: Path to the folder where store the results.
+    :param count: int, count of files to convert.
+    :param max_size: int, max size of the converting file.
+
+    :return: yield tuple of path to valid source
+    file and destination file.
+    """
     processed = 0
     for from_, is_ok in validate_videos(start_path, max_size):
         if count != -1 and processed >= count:
@@ -202,9 +238,11 @@ def validate(start_path: Path,
     """
     Print which files are valid to convert but which not.
 
-    :param start_path: start Path.
+    :param base_path: Path to the folder from 
+    where get files to convert.
     :param max_size: int, max size of the file in MB.
-     If length of the file is > max_size, regard it's invalid.
+    If length of the file is > max_size, regard it's invalid.
+
     :return: None.
     """
     valid = invalid = 0
@@ -238,6 +276,20 @@ def convert_all(base_path: Path,
                 dest_path: Path,
                 count: int,
                 max_size: int) -> None:
+    """
+    Start converting in some processes.
+
+    Processes count is equal to count of cpu cores - 1
+    (or 1 if there's only one cpu core).
+
+    :param base_path: Path to the folder from 
+    where get files to convert.
+    :param dest_path: Path to the folder where store the results.
+    :param count: int, count of files to convert.
+    :param max_size: int, max size of the converting file.
+
+    :return: None.
+    """
     os.makedirs(DEST_FOLDER, exist_ok=True)
     os.makedirs(CONVERTED_VIDEOS_FOLDER, exist_ok=True)
 
