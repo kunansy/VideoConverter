@@ -27,7 +27,7 @@ MAX_FILENAME_LENGTH = 16
 
 logger = logger.Logger(__name__, logging.DEBUG)
 logger.add_stream_handler(logging.DEBUG)
-logger.add_file_handler(logging.CRITICAL)
+logger.add_file_handler(logging.DEBUG)
 
 
 def is_video(path: Path) -> bool:
