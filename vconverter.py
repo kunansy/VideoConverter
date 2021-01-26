@@ -97,7 +97,8 @@ def convert(from_: Path,
     short_from = short_filename(from_)
     short_to = short_filename(to_)
 
-    logger.debug(f"Converting '{short_from}' to '{short_to}'")
+    logger.debug(
+        f"Converting '{short_from}', {get_size(from_)}MB to '{short_to}'")
     try:
         video = editor.VideoFileClip(str(from_))
     except Exception as e:
@@ -110,7 +111,8 @@ def convert(from_: Path,
         logger.error(f"{e}\n while converting '{from_}' to '{to_}'")
         raise
 
-    logger.debug(f"Converting '{short_from}' to '{short_to}' completed")
+    logger.debug(f"Converting '{short_from}', {get_size(from_)}MB to "
+                 f"'{short_to}', {get_size(to_)}MB completed")
 
 
 def change_suffix_to_mp4(path: Path or str) -> Path:
@@ -224,10 +226,10 @@ def validate(start_path: Path,
 
         if is_valid:
             valid += 1
-            print(f"{shorted_name} is valid".rjust(40, '.'))
+            print(f"{shorted_name}, {get_size(path)}MB is valid".rjust(40, '.'))
         else:
             invalid += 1
-            print(f"{shorted_name} is invalid".rjust(40, '.'))
+            print(f"{shorted_name}, {get_size(path)}MB is invalid".rjust(40, '.'))
 
     print(colorama.Fore.GREEN, "=" * 50, colorama.Fore.RESET, sep='')
     print(f"Total files count: {len(os.listdir(start_path))}")
