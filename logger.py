@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import Union
+from typing import Union, List
 
 import exceptions
 
@@ -14,24 +14,26 @@ class Logger(logging.Logger):
     DATE_FMT = "%d.%m.%Y %H:%M:%S"
 
     LOG_FOLDER = Path('logs')
+    LOG_FILE_NAME = 'converter.log'
 
     def __init__(self,
                  name: str,
                  level: str or int,
                  *,
-                 msg_format: str = None,
-                 date_format: str = None,
+                 fmt: str = None,
+                 date_fmt: str = None,
                  log_folder: str or Path = None,
-                 log_file: str or Path = None) -> None:
+                 log_file_name: str or Path = None) -> None:
         super().__init__(name, level)
 
+        self.MSG_FMT = fmt or self.MSG_FMT
+        self.DATE_FMT = date_fmt or self.DATE_FMT
         self.LOG_FOLDER = log_folder or self.LOG_FOLDER
+        self.LOG_FILE_NAME = log_file_name or self.LOG_FILE_NAME
+
         os.makedirs(self.LOG_FOLDER, exist_ok=True)
 
-        self.MSG_FMT = msg_format or self.MSG_FMT
-        self.DATE_FMT = date_format or self.DATE_FMT
-
-        self.__log_path = self.LOG_FOLDER / (log_file or 'converter.log')
+        self.__log_path = self.LOG_FOLDER / self.LOG_FILE_NAME
         self.__formatter = logging.Formatter(
             fmt=self.MSG_FMT, datefmt=self.DATE_FMT, style='{'
         )
@@ -48,7 +50,7 @@ class Logger(logging.Logger):
         return self.DATE_FMT
 
     @property
-    def log_path(self) -> Path:
+    def log_file_path(self) -> Path:
         return self.__log_path
 
     @property
@@ -86,7 +88,7 @@ class Logger(logging.Logger):
             self.warning(f"Stream handler even exists")
 
         handler = logging.FileHandler(
-            self.log_path, delay=True, encoding='utf-8'
+            self.log_file_path, delay=True, encoding='utf-8'
         )
         handler.setLevel(level)
         handler.setFormatter(self.formatter)
@@ -121,8 +123,9 @@ class Logger(logging.Logger):
         return iter(self.handlers)
 
     def __getitem__(self,
-                    index: int) -> logging.Handler:
-        return self.handlers[index]
+                    item: int or slice
+                    ) -> logging.Handler or List[logging.Handler]:
+        return self.handlers[item]
 
     def __setitem__(self,
                     index: int,
