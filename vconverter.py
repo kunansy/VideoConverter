@@ -225,12 +225,12 @@ def validate(start_path: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description=f"Convert a video file to .mp4."
-                    f"It can convert files these formats: {VIDEO}"
+        description=f"Convert a video file to .mp4. "
+                    f"It can convert files these formats: {VIDEO}."
     )
     parser.add_argument(
         '-v', '--validate',
-        help="See which videos might be converted",
+        help="See which videos might be converted.",
         action="store_true",
         default=False,
         dest='validate',
@@ -240,14 +240,14 @@ def main() -> None:
         '-c', '--convert',
         type=int,
         help="Set count of videos to convert. If -1 "
-             "all files will be converted. 0 by default",
+             "all files will be converted. 0 by default.",
         default=0,
         dest="count",
         required=False
     )
     parser.add_argument(
         '-p', '--start-path',
-        help="Path to dir where there are videos to convert."
+        help="Path to dir where there are videos to convert. "
              "Current dir by default.",
         type=Path,
         default=Path('.'),
@@ -256,8 +256,8 @@ def main() -> None:
     )
     parser.add_argument(
         '-d', '--destination-path',
-        help="Path to where store processed videos."
-             "result/ by default.",
+        help="Path to where store processed videos. "
+             "'result/' by default.",
         type=Path,
         default=DEST_FOLDER,
         dest='dest_path',
@@ -265,7 +265,7 @@ def main() -> None:
     )
     parser.add_argument(
         '--stream-handler-level',
-        help="Level of the stream handler",
+        help="Level of the stream handler.",
         type=str,
         choices=("debug", "info", "warning", "error", "critical"),
         default="debug",
@@ -274,7 +274,7 @@ def main() -> None:
     )
     parser.add_argument(
         '--file-handler-level',
-        help="Level of the file handler",
+        help="Level of the file handler.",
         type=str,
         choices=("debug", "info", "warning", "error", "critical"),
         default="debug",
