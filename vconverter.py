@@ -187,6 +187,9 @@ def convert_all(base_path: Path,
         )
 
 
+def is_item_valid(path: Path,
+                  max_size: int) -> bool:
+    return is_video(path) and get_size(path) <= max_size
 
 
 def validate_videos(start_path: Path,
@@ -205,7 +208,7 @@ def validate_videos(start_path: Path,
     for item in os.listdir(start_path):
         item = Path(item)
         if item.suffix:
-            yield item, is_video(item)
+            yield item, is_item_valid(item, max_size)
 
 
 def validate(start_path: Path,
