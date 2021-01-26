@@ -55,9 +55,9 @@ def short_filename(path: Path,
     shorted_name = Path(path).name
     if len(shorted_name) > length:
         shorted_name = ''.join(
-            shorted_name[:length // 2] +
+            shorted_name[:length // 2].strip() +
             '...' +
-            shorted_name[-length // 2:])
+            shorted_name[-length // 2:].strip())
     return shorted_name
 
 
