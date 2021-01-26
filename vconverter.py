@@ -79,6 +79,7 @@ def get_size(path: Path,
 
 def convert(from_: Path,
             to_: Path,
+            *,
             force: bool = False,
             **kwargs) -> None:
     """
@@ -166,9 +167,13 @@ def convert_file_to_mp4(from_: Path,
         convert(from_, to_)
     except Exception as e:
         logger.error(f"{e}\nconverting {from_} to {to_}")
-
-    # move processed video
-    os.rename(from_, CONVERTED_VIDEOS_FOLDER / from_)
+    else:
+        # move processed video
+        os.rename(from_, CONVERTED_VIDEOS_FOLDER / from_)
+        logger.debug(
+            f"Converted successfully, source file {short_filename(from_, 8)} "
+            f"moved to {CONVERTED_VIDEOS_FOLDER}"
+        )
 
 
 def is_item_valid(path: Path,
@@ -184,7 +189,7 @@ def is_item_valid(path: Path,
     return is_video(path) and get_size(path) <= max_size
 
 
-def validate_videos(start_path: Path,
+def validate_videos(base_path: Path,
                     max_size: int) -> Iterator[Tuple[Path, bool]]:
     """
     Get path to file and status whether
@@ -199,13 +204,13 @@ def validate_videos(start_path: Path,
 
     :return: tuple of Path and bool.
     """
-    for item in os.listdir(start_path):
+    for item in os.listdir(base_path):
         item = Path(item)
         if item.suffix:
             yield item, is_item_valid(item, max_size)
 
 
-def files(start_path: Path,
+def files(base_path: Path,
           dest_path: Path,
           count: int,
           max_size: int) -> Iterator[Tuple[Path, Path]]:
@@ -223,7 +228,7 @@ def files(start_path: Path,
     file and destination file.
     """
     processed = 0
-    for from_, is_ok in validate_videos(start_path, max_size):
+    for from_, is_ok in validate_videos(base_path, max_size):
         if count != -1 and processed >= count:
             return
 
@@ -233,7 +238,7 @@ def files(start_path: Path,
             yield from_, dest_path / to_
 
 
-def validate(start_path: Path,
+def validate(base_path: Path,
              max_size: int) -> None:
     """
     Print which files are valid to convert but which not.
@@ -246,7 +251,7 @@ def validate(start_path: Path,
     :return: None.
     """
     valid = invalid = 0
-    for path, is_valid in validate_videos(start_path, max_size):
+    for path, is_valid in validate_videos(base_path, max_size):
         shorted_name = short_filename(path)
         print(colorama.Fore.GREEN if is_valid else colorama.Fore.RED,
               "Processing", end='', sep='')
@@ -259,7 +264,7 @@ def validate(start_path: Path,
             print(f"{shorted_name}, {get_size(path)}MB is invalid".rjust(40, '.'))
 
     print(colorama.Fore.GREEN, "=" * 50, colorama.Fore.RESET, sep='')
-    print(f"Total files count: {len(os.listdir(start_path))}")
+    print(f"Total files count: {len(os.listdir(base_path))}")
     if valid == invalid == 0:
         print(f"No video found")
         return
@@ -388,7 +393,7 @@ def main() -> None:
         mm = f"{int(mm)}m " if int(mm) else ''
 
         logger.info(
-            f"Converting {args.count} videos completed by {hh}{mm}{ss}s")
+            f"Converting <= {args.count} videos completed by {hh}{mm}{ss}s")
 
 
 if __name__ == "__main__":
