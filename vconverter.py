@@ -264,18 +264,27 @@ def main() -> None:
         required=False
     )
     parser.add_argument(
-        '-l', '--log-level',
+        '--stream-handler-level',
         help="Level of the stream handler",
         type=str,
         choices=("debug", "info", "warning", "error", "critical"),
         default="debug",
-        dest="level",
+        dest="stream_handler_level",
+        required=False
+    )
+    parser.add_argument(
+        '--file-handler-level',
+        help="Level of the file handler",
+        type=str,
+        choices=("debug", "info", "warning", "error", "critical"),
+        default="debug",
+        dest="file_handler_level",
         required=False
     )
     args = parser.parse_args()
 
-    if level := args.level:
-        logger.set_stream_handler_level(level)
+    logger.set_stream_handler_level(args.stream_handler_level)
+    logger.set_file_handler_level(args.file_handler_level)
 
     if args.validate:
         validate(Path(args.start_path))
