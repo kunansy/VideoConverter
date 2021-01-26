@@ -36,6 +36,9 @@ class Logger(logging.Logger):
             fmt=self.MSG_FMT, datefmt=self.DATE_FMT, style='{'
         )
 
+        # don't forget to add the logger the global loggers storage
+        logging.Logger.manager.loggerDict[name] = self
+
     @property
     def msg_format(self) -> str:
         return self.MSG_FMT
