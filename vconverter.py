@@ -57,6 +57,14 @@ def short_filename(path: Path,
     return shorted_name
 
 
+def get_size(path: Path,
+             decimal_places: int = 1) -> int:
+    if not path.exists():
+        return -1
+
+    return round(os.path.getsize(path) / 1024**2, decimal_places)
+
+
 def convert(from_: Path,
             to_: Path,
             force: bool = False,
@@ -150,9 +158,10 @@ def convert_file_to_mp4(from_: Path,
 
 def files(start_path: Path,
           dest_path: Path,
-          count: int) -> Iterator[Tuple[Path, Path]]:
+          count: int,
+          max_size: int) -> Iterator[Tuple[Path, Path]]:
     processed = 0
-    for from_, is_ok in validate_videos(start_path):
+    for from_, is_ok in validate_videos(start_path, max_size):
         if count != -1 and processed >= count:
             return
 
@@ -164,16 +173,22 @@ def files(start_path: Path,
 
 def convert_all(base_path: Path,
                 dest_path: Path,
-                count: int) -> None:
+                count: int,
+                max_size: int) -> None:
     os.makedirs(DEST_FOLDER, exist_ok=True)
     os.makedirs(CONVERTED_VIDEOS_FOLDER, exist_ok=True)
 
     processes_count = mp.cpu_count() - 1 or 1
     with mp.Pool(processes_count) as pool:
-        pool.starmap(convert_file_to_mp4, files(base_path, dest_path, count))
+        pool.starmap(
+            convert_file_to_mp4, files(base_path, dest_path, count, max_size)
+        )
 
 
-def validate_videos(start_path: Path) -> Iterator[Tuple[Path, bool]]:
+
+
+def validate_videos(start_path: Path,
+                    max_size: int) -> Iterator[Tuple[Path, bool]]:
     """
     Get path to file and status whether
      the file is valid to convert.
@@ -181,6 +196,8 @@ def validate_videos(start_path: Path) -> Iterator[Tuple[Path, bool]]:
     Skip all files (dirs) with no extension.
 
     :param start_path: start Path.
+    :param max_size: int, max size of the file in MB.
+     If length of the file is > max_size, regard it's invalid.
     :return: tuple of Path and bool.
     """
     for item in os.listdir(start_path):
@@ -189,15 +206,18 @@ def validate_videos(start_path: Path) -> Iterator[Tuple[Path, bool]]:
             yield item, is_video(item)
 
 
-def validate(start_path: Path) -> None:
+def validate(start_path: Path,
+             max_size: int) -> None:
     """
     Print which files are valid to convert but which not.
 
     :param start_path: start Path.
+    :param max_size: int, max size of the file in MB.
+     If length of the file is > max_size, regard it's invalid.
     :return: None.
     """
     valid = invalid = 0
-    for path, is_valid in validate_videos(start_path):
+    for path, is_valid in validate_videos(start_path, max_size):
         shorted_name = short_filename(path)
         print(colorama.Fore.GREEN if is_valid else colorama.Fore.RED,
               "Processing", end='', sep='')
@@ -264,6 +284,15 @@ def main() -> None:
         required=False
     )
     parser.add_argument(
+        '--max-size',
+        help="Max size of the file in MB. If file size > it, "
+             "skip this file. 10MB by default.",
+        type=int,
+        default=10,
+        dest='max_size',
+        required=False
+    )
+    parser.add_argument(
         '--stream-handler-level',
         help="Level of the stream handler.",
         type=str,
@@ -287,12 +316,12 @@ def main() -> None:
     logger.set_file_handler_level(args.file_handler_level)
 
     if args.validate:
-        validate(Path(args.start_path))
+        validate(Path(args.start_path), args.max_size)
     if count := args.count:
         logger.info("Converting started...")
         start = time.time()
 
-        convert_all(args.start_path, args.dest_path, count)
+        convert_all(args.start_path, args.dest_path, count, args.max_size)
 
         ex_time = round(time.time() - start, 2)
         ex_time = f"{datetime.timedelta(seconds=ex_time)}".split('.')[0]
