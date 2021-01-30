@@ -1,8 +1,7 @@
 import logging
-import logging.handlers
 import os
 from pathlib import Path
-from typing import Union, List
+from typing import Union
 
 import exceptions as ex
 
@@ -55,8 +54,8 @@ class Logger(logging.Logger):
         return self._get_handler(logging.StreamHandler)
 
     @property
-    def file_handler(self) -> logging.handlers.RotatingFileHandler:
-        return self._get_handler(logging.handlers.RotatingFileHandler)
+    def file_handler(self) -> logging.FileHandler:
+        return self._get_handler(logging.FileHandler)
 
     def add_stream_handler(self,
                            level: LEVEL) -> None:
@@ -84,9 +83,8 @@ class Logger(logging.Logger):
             self.error(f"File handler even exists")
             raise ex.HandlerEvenExistsError("File handler even exists")
 
-        handler = logging.handlers.RotatingFileHandler(
-            self.log_file_path, delay=True, encoding='utf-8',
-            maxBytes=10240, backupCount=3
+        handler = logging.FileHandler(
+            self.log_file_path, delay=True, encoding='utf-8'
         )
         handler.setLevel(level)
         handler.setFormatter(self.formatter)
