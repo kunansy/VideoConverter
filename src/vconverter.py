@@ -17,8 +17,7 @@ import logger
 
 
 DEST_FOLDER = Path('result/')
-# store here videos have been
-# converted (original files)
+# store here videos have been converted (original files)
 CONVERTED_VIDEOS_FOLDER = Path('processed/')
 
 MAX_FILENAME_LENGTH = 16
@@ -79,7 +78,7 @@ def convert(from_: Path,
     """
     Convert a video to another video format.
 
-    :param from_: Path to video to convert.
+    :param from_: Path to video to be converted.
     :param to_: Path to result file.
     :param force: bool, rewrite existing to_ file if True.
      False by default.
@@ -153,8 +152,8 @@ def convert_file_to_mp4(from_: Path,
     to_ = to_ or change_suffix_to_mp4(from_)
     try:
         convert(from_, to_)
-    except Exception as e:
-        logger.error(f"{e}\nconverting {from_} to {to_}")
+    except Exception:
+        pass
     else:
         # move processed video
         os.rename(from_, CONVERTED_VIDEOS_FOLDER / from_)
@@ -203,17 +202,20 @@ def files(base_path: Path,
           count: int,
           max_size: int) -> Iterator[Tuple[Path, Path]]:
     """
-    Yield path of valid source file to convert and
-    destination path.
+    Yield path to valid source file to be
+    converted and destination path.
 
     :param base_path: Path to the folder from
     where get files to convert.
-    :param dest_path: Path to the folder where store the results.
+    :param dest_path: Path to the folder
+    where store the results.
     :param count: int, count of files to convert.
-    :param max_size: int, max size of the converting file.
+    -1 if you need to convert all files.
+    :param max_size: int, max size of the
+    file to be converted in MB.
 
-    :return: yield tuple of path to valid source
-    file and destination file.
+    :return: yield tuple of Path to valid
+    source file and destination file.
     """
     processed = 0
     for from_, is_ok in validate_videos(base_path, max_size):
@@ -229,29 +231,28 @@ def files(base_path: Path,
 def validate(base_path: Path,
              max_size: int) -> None:
     """
-    Print which files are valid to convert but which not.
+    Print which files are valid to be converted but which not.
 
     :param base_path: Path to the folder from 
     where get files to convert.
-    :param max_size: int, max size of the file in MB.
+    :param max_size: int, max size of the file to be converted in MB.
     If length of the file is > max_size, regard it's invalid.
 
     :return: None.
     """
     valid = invalid = 0
     for path, is_valid in validate_videos(base_path, max_size):
-        shorted_name = short_filename(path)
         print(colorama.Fore.GREEN if is_valid else colorama.Fore.RED,
               "Processing", end='', sep='')
 
         if is_valid:
             valid += 1
-            print(f"{shorted_name}, {get_size(path)}MB is valid".rjust(40, '.'))
+            print(f"{get_info(path, short=True)} is valid".rjust(50, '.'))
         else:
             invalid += 1
-            print(f"{shorted_name}, {get_size(path)}MB is invalid".rjust(40, '.'))
+            print(f"{get_info(path, short=True)} is invalid".rjust(50, '.'))
 
-    print(colorama.Fore.GREEN, "=" * 50, colorama.Fore.RESET, sep='')
+    print(colorama.Fore.GREEN, "=" * 60, colorama.Fore.RESET, sep='')
     print(f"Total files count: {len(os.listdir(base_path))}")
     if valid == invalid == 0:
         print(f"No video found")
@@ -278,8 +279,9 @@ def convert_all(base_path: Path,
     :param base_path: Path to the folder from 
     where get files to convert.
     :param dest_path: Path to the folder where store the results.
-    :param count: int, count of files to convert.
-    :param max_size: int, max size of the converting file.
+    :param count: int, count of files to be converted convert.
+    -1 if you want to convert all files.
+    :param max_size: int, max size of the file to be converted in MB.
 
     :return: None.
     """
@@ -325,8 +327,8 @@ def main() -> None:
     )
     parser.add_argument(
         '-d', '--destination-path',
-        help="Path to where store processed videos. "
-             "'result/' by default.",
+        help=f"Path to where store processed videos. "
+             f"'{DEST_FOLDER}' by default.",
         type=Path,
         default=DEST_FOLDER,
         dest='dest_path',
@@ -378,9 +380,10 @@ def main() -> None:
         hh, mm, ss = ex_time.split(':')
         hh = f"{int(hh)}h " if int(hh) else ''
         mm = f"{int(mm)}m " if int(mm) else ''
+        ex_time = f"{hh}{mm}{ss}s"
 
         logger.info(
-            f"Converting <= {args.count} videos completed by {hh}{mm}{ss}s")
+            f"Converting <= {args.сount} videos completed by {ex_time}")
 
 
 if __name__ == "__main__":
