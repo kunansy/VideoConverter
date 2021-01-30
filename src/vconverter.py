@@ -392,7 +392,8 @@ def main() -> None:
 
     if args.validate:
         validate(Path(args.start_path), args.max_size)
-    if count := args.count:
+    if args.count:
+        count = args.count
         logger.info("Converting started...")
         start = time.time()
 
@@ -407,7 +408,7 @@ def main() -> None:
         ex_time = f"{hh}{mm}{ss}s"
 
         logger.info(
-            f"Converting <= {args.сount} videos completed by {ex_time}")
+            f"Converting <= {count} videos completed by {ex_time}")
 
 
 if __name__ == "__main__":
