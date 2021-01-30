@@ -60,8 +60,13 @@ class Logger(logging.Logger):
 
     def add_stream_handler(self,
                            level: LEVEL) -> None:
-        if logging.StreamHandler in self:
-            self.warning(f"Stream handler even exists")
+        try:
+            self.stream_handler
+        except ValueError:
+            pass
+        else:
+            self.error(f"Stream handler even exists")
+            raise ex.HandlerEvenExistsError("Stream handler even exists")
 
         handler = logging.StreamHandler()
         handler.setLevel(level)
