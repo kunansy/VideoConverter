@@ -100,11 +100,11 @@ class Logger(logging.Logger):
 
     def set_stream_handler_level(self,
                                  level: LEVEL) -> None:
-        self._set_handler_level(logging.StreamHandler, level)
+        self._set_handler_level(type(self.stream_handler), level)
 
     def set_file_handler_level(self,
                                level: LEVEL) -> None:
-        self._set_handler_level(logging.FileHandler, level)
+        self._set_handler_level(type(self.file_handler), level)
 
     def __iter__(self) -> iter:
         return iter(self.handlers)
