@@ -100,18 +100,18 @@ class Logger(logging.Logger):
     def _set_handler_level(self,
                            handler_type: type,
                            level: LEVEL):
-        if handler_type not in self:
-            raise exceptions.HandlerNotFoundError(
-                f"handler '{handler_type.__class__.__name__}' not found")
+        try:
+            handler = self._get_handler(handler_type)
+        except ex.HandlerNotFoundError as e:
+            self.error(f"There's no {handler_type.__class__.__name__}")
+            raise
 
         try:
             level = level.upper()
         except AttributeError:
             pass
 
-        for handler in self:
-            if isinstance(handler, handler_type):
-                handler.setLevel(level)
+        handler.setLevel(level)
 
     def set_stream_handler_level(self,
                                  level: LEVEL) -> None:
