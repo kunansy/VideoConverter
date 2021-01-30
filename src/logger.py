@@ -110,7 +110,8 @@ class Logger(logging.Logger):
         return iter(self.handlers)
 
     def __contains__(self, item: type) -> bool:
-        return any(
-            isinstance(handler, item)
-            for handler in self
-        )
+        try:
+            self._get_handler(item)
+        except ValueError:
+            return False
+        return True
