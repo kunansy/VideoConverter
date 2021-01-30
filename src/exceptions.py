@@ -1,10 +1,10 @@
-class FileEvenExistsError(Exception):
+class FileEvenExistsError(FileExistsError):
     pass
 
 
-class WrongExtensionError(Exception):
+class WrongExtensionError(ValueError):
     pass
 
 
-class HandlerNotFoundError(Exception):
+class HandlerNotFoundError(ValueError):
     pass
