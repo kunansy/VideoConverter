@@ -42,34 +42,12 @@ class Logger(logging.Logger):
         logging.Logger.manager.loggerDict[name] = self
 
     @property
-    def msg_format(self) -> str:
-        return self.MSG_FMT
-
-    @property
-    def date_format(self) -> str:
-        return self.DATE_FMT
-
-    @property
     def log_file_path(self) -> Path:
         return self.__log_path
 
     @property
     def formatter(self) -> logging.Formatter:
         return self.__formatter
-
-    @formatter.setter
-    def formatter(self,
-                  msg_format: str = None,
-                  date_format: str = None) -> None:
-        if msg_format is date_format is None:
-            raise TypeError("No args found")
-
-        self.__formatter = logging.Formatter(
-            fmt=msg_format, datefmt=date_format, style='{'
-        )
-
-        for handler in self:
-            handler.formatter = self.formatter
 
     def add_stream_handler(self,
                            level: LEVEL) -> None:
@@ -121,16 +99,6 @@ class Logger(logging.Logger):
 
     def __iter__(self) -> iter:
         return iter(self.handlers)
-
-    def __getitem__(self,
-                    item: int or slice
-                    ) -> logging.Handler or List[logging.Handler]:
-        return self.handlers[item]
-
-    def __setitem__(self,
-                    index: int,
-                    value: logging.Handler) -> None:
-        self.handlers[index] = value
 
     def __contains__(self, item: type) -> bool:
         return any(
