@@ -2,6 +2,7 @@
 import argparse
 import datetime
 import logging
+import mimetypes
 import multiprocessing as mp
 import os
 import time
@@ -9,21 +10,14 @@ from pathlib import Path
 from typing import Tuple, Iterator
 
 import colorama
-import moviepy.editor as editor
+import ffmpy
 
 import exceptions
 import logger
 
-# these video extensions can be
-# converted to mp4 by the program
-VIDEO = (
-    '.mp4', '.m4v', '.mkv', '.flv',
-    '.webm', '.avi', '.wmv', '.mpg', '.mov'
-)
 
 DEST_FOLDER = Path('result/')
-# store here videos have been
-# converted (original files)
+# store here videos have been converted (original files)
 CONVERTED_VIDEOS_FOLDER = Path('processed/')
 
 MAX_FILENAME_LENGTH = 16
@@ -38,7 +32,7 @@ def is_video(path: Path) -> bool:
     :param path: Path to file.
     :return: bool, check whether the file conversion is supported.
     """
-    return path.suffix in VIDEO
+    return mimetypes.guess_type(path)[0].startswith('video')
 
 
 def short_filename(path: Path,
@@ -77,19 +71,41 @@ def get_size(path: Path,
     return round(os.path.getsize(path) / 1024**2, decimal_places)
 
 
+def get_info(from_: Path = None,
+             to_: Path = None,
+             *,
+             short: bool = False) -> str:
+    """
+    Short the file names, add their sizes.
+
+    :param from_: Path to the file to be converted.
+    :param to_: Path to the file result file. None by default.
+    :param short: bool, short file names ot not.
+
+    :return: str, str with this info for log messages.
+    """
+    short = short_filename if short else (lambda path: path)
+    res = ''
+
+    if from_ is not None:
+        res += f"'{short(from_)}', {get_size(from_)}MB"
+    if to_ is not None:
+        res += f" to '{short(to_)}'" + to_.exists() * f", {get_size(to_)}MB"
+
+    return res
+
+
 def convert(from_: Path,
             to_: Path,
             *,
-            force: bool = False,
-            **kwargs) -> None:
+            force: bool = False) -> None:
     """
     Convert a video to another video format.
 
-    :param from_: Path to video to convert.
+    :param from_: Path to video to be converted.
     :param to_: Path to result file.
     :param force: bool, rewrite existing to_ file if True.
      False by default.
-    :param kwargs: key words to writing a new video file.
     :return: None.
 
     :exception FileNotFoundError: if the source file doesn't exist.
@@ -107,25 +123,20 @@ def convert(from_: Path,
         raise exceptions.WrongExtensionError(
             f"'{from_.suffix}' or '{to_.suffix}' is wrong extension")
 
-    short_from = short_filename(from_)
-    short_to = short_filename(to_)
-
-    logger.debug(
-        f"Converting '{short_from}', {get_size(from_)}MB to '{short_to}'")
-    try:
-        video = editor.VideoFileClip(str(from_))
-    except Exception as e:
-        logger.error(f"{e}\n while opening '{from_}' file")
-        raise
+    logger.debug(f"Converting {get_info(from_)}")
 
     try:
-        video.write_videofile(str(to_), **kwargs)
+        ff = ffmpy.FFmpeg(
+            inputs={from_: None},
+            outputs={to_: None}
+        )
+
+        ff.run()
     except Exception as e:
-        logger.error(f"{e}\n while converting '{from_}' to '{to_}'")
+        logger.error(f"{e}\n while converting '{from_}' file")
         raise
 
-    logger.debug(f"Converting '{short_from}', {get_size(from_)}MB to "
-                 f"'{short_to}', {get_size(to_)}MB completed")
+    logger.debug(f"Converting {get_info(from_, to_)} completed")
 
 
 def change_suffix_to_mp4(path: Path or str) -> Path:
@@ -165,8 +176,8 @@ def convert_file_to_mp4(from_: Path,
     to_ = to_ or change_suffix_to_mp4(from_)
     try:
         convert(from_, to_)
-    except Exception as e:
-        logger.error(f"{e}\nconverting {from_} to {to_}")
+    except Exception:
+        pass
     else:
         # move processed video
         os.rename(from_, CONVERTED_VIDEOS_FOLDER / from_)
@@ -215,17 +226,20 @@ def files(base_path: Path,
           count: int,
           max_size: int) -> Iterator[Tuple[Path, Path]]:
     """
-    Yield path of valid source file to convert and
-    destination path.
+    Yield path to valid source file to be
+    converted and destination path.
 
     :param base_path: Path to the folder from
     where get files to convert.
-    :param dest_path: Path to the folder where store the results.
+    :param dest_path: Path to the folder
+    where store the results.
     :param count: int, count of files to convert.
-    :param max_size: int, max size of the converting file.
+    -1 if you need to convert all files.
+    :param max_size: int, max size of the
+    file to be converted in MB.
 
-    :return: yield tuple of path to valid source
-    file and destination file.
+    :return: yield tuple of Path to valid
+    source file and destination file.
     """
     processed = 0
     for from_, is_ok in validate_videos(base_path, max_size):
@@ -241,29 +255,28 @@ def files(base_path: Path,
 def validate(base_path: Path,
              max_size: int) -> None:
     """
-    Print which files are valid to convert but which not.
+    Print which files are valid to be converted but which not.
 
     :param base_path: Path to the folder from 
     where get files to convert.
-    :param max_size: int, max size of the file in MB.
+    :param max_size: int, max size of the file to be converted in MB.
     If length of the file is > max_size, regard it's invalid.
 
     :return: None.
     """
     valid = invalid = 0
     for path, is_valid in validate_videos(base_path, max_size):
-        shorted_name = short_filename(path)
         print(colorama.Fore.GREEN if is_valid else colorama.Fore.RED,
               "Processing", end='', sep='')
 
         if is_valid:
             valid += 1
-            print(f"{shorted_name}, {get_size(path)}MB is valid".rjust(40, '.'))
+            print(f"{get_info(path, short=True)} is valid".rjust(50, '.'))
         else:
             invalid += 1
-            print(f"{shorted_name}, {get_size(path)}MB is invalid".rjust(40, '.'))
+            print(f"{get_info(path, short=True)} is invalid".rjust(50, '.'))
 
-    print(colorama.Fore.GREEN, "=" * 50, colorama.Fore.RESET, sep='')
+    print(colorama.Fore.GREEN, "=" * 60, colorama.Fore.RESET, sep='')
     print(f"Total files count: {len(os.listdir(base_path))}")
     if valid == invalid == 0:
         print(f"No video found")
@@ -290,8 +303,9 @@ def convert_all(base_path: Path,
     :param base_path: Path to the folder from 
     where get files to convert.
     :param dest_path: Path to the folder where store the results.
-    :param count: int, count of files to convert.
-    :param max_size: int, max size of the converting file.
+    :param count: int, count of files to be converted convert.
+    -1 if you want to convert all files.
+    :param max_size: int, max size of the file to be converted in MB.
 
     :return: None.
     """
@@ -308,7 +322,6 @@ def convert_all(base_path: Path,
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=f"Convert a video file to .mp4. "
-                    f"It can convert files these formats: {VIDEO}."
     )
     parser.add_argument(
         '-v', '--validate',
@@ -338,8 +351,8 @@ def main() -> None:
     )
     parser.add_argument(
         '-d', '--destination-path',
-        help="Path to where store processed videos. "
-             "'result/' by default.",
+        help=f"Path to where store processed videos. "
+             f"'{DEST_FOLDER}' by default.",
         type=Path,
         default=DEST_FOLDER,
         dest='dest_path',
@@ -379,7 +392,8 @@ def main() -> None:
 
     if args.validate:
         validate(Path(args.start_path), args.max_size)
-    if count := args.count:
+    if args.count:
+        count = args.count
         logger.info("Converting started...")
         start = time.time()
 
@@ -391,9 +405,10 @@ def main() -> None:
         hh, mm, ss = ex_time.split(':')
         hh = f"{int(hh)}h " if int(hh) else ''
         mm = f"{int(mm)}m " if int(mm) else ''
+        ex_time = f"{hh}{mm}{ss}s"
 
         logger.info(
-            f"Converting <= {args.count} videos completed by {hh}{mm}{ss}s")
+            f"Converting <= {count} videos completed by {ex_time}")
 
 
 if __name__ == "__main__":
