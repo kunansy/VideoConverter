@@ -90,7 +90,8 @@ def get_info(from_: Path = None,
     if from_ is not None:
         res += f"'{short(from_)}', {get_size(from_)}MB"
     if to_ is not None:
-        res += f" to '{short(to_)}'" + to_.exists() * f", {get_size(to_)}MB"
+        res += bool(from_) * ' to '
+        res += f"'{short(to_)}'" + to_.exists() * f"{get_size(to_)}MB"
 
     return res
 
