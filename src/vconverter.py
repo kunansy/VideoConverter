@@ -71,6 +71,30 @@ def get_size(path: Path,
     return round(os.path.getsize(path) / 1024**2, decimal_places)
 
 
+def get_info(from_: Path = None,
+             to_: Path = None,
+             *,
+             short: bool = False) -> str:
+    """
+    Short the file names, add their sizes.
+
+    :param from_: Path to the file to be converted.
+    :param to_: Path to the file result file. None by default.
+    :param short: bool, short file names ot not.
+
+    :return: str, str with this info for log messages.
+    """
+    short = short_filename if short else (lambda path: path)
+    res = ''
+
+    if from_ is not None:
+        res += f"'{short(from_)}', {get_size(from_)}MB"
+    if to_ is not None:
+        res += f" to '{short(to_)}'" + to_.exists() * f", {get_size(to_)}MB"
+
+    return res
+
+
 def convert(from_: Path,
             to_: Path,
             *,
