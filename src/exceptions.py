@@ -8,3 +8,7 @@ class WrongExtensionError(ValueError):
 
 class HandlerNotFoundError(ValueError):
     pass
+
+
+class HandlerEvenExistsError(ValueError):
+    pass
