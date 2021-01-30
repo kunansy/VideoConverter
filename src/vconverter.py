@@ -100,8 +100,7 @@ def convert(from_: Path,
         raise exceptions.WrongExtensionError(
             f"'{from_.suffix}' or '{to_.suffix}' is wrong extension")
 
-    short_from = short_filename(from_)
-    short_to = short_filename(to_)
+    logger.debug(f"Converting {get_info(from_)}")
 
     logger.debug(
         f"Converting '{short_from}', {get_size(from_)}MB to '{short_to}'")
