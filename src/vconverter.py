@@ -102,8 +102,6 @@ def convert(from_: Path,
 
     logger.debug(f"Converting {get_info(from_)}")
 
-    logger.debug(
-        f"Converting '{short_from}', {get_size(from_)}MB to '{short_to}'")
     try:
         ff = ffmpy.FFmpeg(
             inputs={from_: None},
@@ -115,14 +113,7 @@ def convert(from_: Path,
         logger.error(f"{e}\n while converting '{from_}' file")
         raise
 
-    try:
-        video.write_videofile(str(to_), **kwargs)
-    except Exception as e:
-        logger.error(f"{e}\n while converting '{from_}' to '{to_}'")
-        raise
-
-    logger.debug(f"Converting '{short_from}', {get_size(from_)}MB to "
-                 f"'{short_to}', {get_size(to_)}MB completed")
+    logger.debug(f"Converting {get_info(from_, to_)} completed")
 
 
 def change_suffix_to_mp4(path: Path or str) -> Path:
