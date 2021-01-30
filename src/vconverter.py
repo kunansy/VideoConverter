@@ -2,6 +2,7 @@
 import argparse
 import datetime
 import logging
+import mimetypes
 import multiprocessing as mp
 import os
 import time
@@ -9,17 +10,11 @@ from pathlib import Path
 from typing import Tuple, Iterator
 
 import colorama
-import moviepy.editor as editor
+import ffmpy
 
 import exceptions
 import logger
 
-# these video extensions can be
-# converted to mp4 by the program
-VIDEO = (
-    '.mp4', '.m4v', '.mkv', '.flv',
-    '.webm', '.avi', '.wmv', '.mpg', '.mov'
-)
 
 DEST_FOLDER = Path('result/')
 # store here videos have been
@@ -38,7 +33,7 @@ def is_video(path: Path) -> bool:
     :param path: Path to file.
     :return: bool, check whether the file conversion is supported.
     """
-    return path.suffix in VIDEO
+    return mimetypes.guess_type(path)[0].startswith('video')
 
 
 def short_filename(path: Path,
@@ -80,8 +75,7 @@ def get_size(path: Path,
 def convert(from_: Path,
             to_: Path,
             *,
-            force: bool = False,
-            **kwargs) -> None:
+            force: bool = False) -> None:
     """
     Convert a video to another video format.
 
@@ -89,7 +83,6 @@ def convert(from_: Path,
     :param to_: Path to result file.
     :param force: bool, rewrite existing to_ file if True.
      False by default.
-    :param kwargs: key words to writing a new video file.
     :return: None.
 
     :exception FileNotFoundError: if the source file doesn't exist.
@@ -113,9 +106,14 @@ def convert(from_: Path,
     logger.debug(
         f"Converting '{short_from}', {get_size(from_)}MB to '{short_to}'")
     try:
-        video = editor.VideoFileClip(str(from_))
+        ff = ffmpy.FFmpeg(
+            inputs={from_: None},
+            outputs={to_: None}
+        )
+
+        ff.run()
     except Exception as e:
-        logger.error(f"{e}\n while opening '{from_}' file")
+        logger.error(f"{e}\n while converting '{from_}' file")
         raise
 
     try:
@@ -308,7 +306,6 @@ def convert_all(base_path: Path,
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=f"Convert a video file to .mp4. "
-                    f"It can convert files these formats: {VIDEO}."
     )
     parser.add_argument(
         '-v', '--validate',
