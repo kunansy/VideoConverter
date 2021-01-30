@@ -49,6 +49,14 @@ class Logger(logging.Logger):
     def formatter(self) -> logging.Formatter:
         return self.__formatter
 
+    @property
+    def stream_handler(self) -> logging.StreamHandler:
+        return self._get_handler(logging.StreamHandler)
+
+    @property
+    def file_handler(self) -> logging.handlers.RotatingFileHandler:
+        return self._get_handler(logging.handlers.RotatingFileHandler)
+
     def add_stream_handler(self,
                            level: LEVEL) -> None:
         if logging.StreamHandler in self:
