@@ -73,6 +73,15 @@ class Logger(logging.Logger):
 
         self.addHandler(handler)
 
+    def _get_handler(self,
+                     handler_type: type) -> logging.Handler:
+        for handler in self.handlers:
+            if isinstance(handler, handler_type):
+                return handler
+
+        raise ex.HandlerNotFoundError(
+            f"There's no '{handler_type.__class__.__name__}'")
+
     def _set_handler_level(self,
                            handler_type: type,
                            level: LEVEL):
