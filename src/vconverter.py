@@ -32,7 +32,10 @@ def is_video(path: Path) -> bool:
     :param path: Path to file.
     :return: bool, check whether the file conversion is supported.
     """
-    return mimetypes.guess_type(path)[0].startswith('video')
+    try:
+        return mimetypes.guess_type(path)[0].startswith('video')
+    except AttributeError:
+        return False
 
 
 def short_filename(path: Path,
