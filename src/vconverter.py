@@ -325,7 +325,7 @@ def convert_all(base_path: Path,
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description=f"Convert a video file to .mp4. "
+        description="Convert a video file to .mp4"
     )
     parser.add_argument(
         '-v', '--validate',
@@ -395,24 +395,16 @@ def main() -> None:
     logger.set_file_handler_level(args.file_handler_level)
 
     if args.validate:
-        validate(Path(args.start_path), args.max_size)
-    if args.count:
-        count = args.count
+        validate(args.start_path, args.max_size)
+    if count := args.count:
         logger.info("Converting started...")
-        start = time.time()
+        start = time.perf_counter()
 
         convert_all(args.start_path, args.dest_path, count, args.max_size)
 
-        ex_time = round(time.time() - start, 2)
-        ex_time = f"{datetime.timedelta(seconds=ex_time)}".split('.')[0]
-
-        hh, mm, ss = ex_time.split(':')
-        hh = f"{int(hh)}h " if int(hh) else ''
-        mm = f"{int(mm)}m " if int(mm) else ''
-        ex_time = f"{hh}{mm}{ss}s"
-
-        logger.info(
-            f"Converting <= {count} videos completed by {ex_time}")
+        ex_time = round(time.perf_counter() - start, 2)
+        logger.info("Converting <= %s videos completed by %s",
+                    count, ex_time)
 
 
 if __name__ == "__main__":
