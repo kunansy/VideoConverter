@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.8
+#!/usr/bin/env python3
 import argparse
 import datetime
 import logging
@@ -167,7 +167,7 @@ def convert_file_to_mp4(from_: Path,
 
     :return: None.
     """
-    if Path(from_).suffix == '.mp4':
+    if from_.suffix == '.mp4':
         os.rename(from_, to_)
         logger.info(f"{from_} is even a mp4 file, move it to destination")
         return
@@ -219,8 +219,7 @@ def validate_videos(base_path: Path,
 
     :return: tuple of Path and bool.
     """
-    for item in os.listdir(base_path):
-        item = Path(item)
+    for item in base_path.iterdir():
         if item.suffix:
             yield item, is_item_valid(item, max_size)
 
@@ -252,8 +251,7 @@ def files(base_path: Path,
 
         if is_ok:
             processed += 1
-            to_ = change_suffix_to_mp4(from_)
-            yield from_, dest_path / to_
+            yield from_, dest_path / change_suffix_to_mp4(from_)
 
 
 def validate(base_path: Path,
